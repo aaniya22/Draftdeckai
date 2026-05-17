@@ -24,7 +24,8 @@ const ALLOWED_PROTOCOLS = new Set(['http:', 'https:']);
 export const isPrivateUrl = (url: string): boolean => {
   try {
     const parsed = new URL(url);
-    const hostname = parsed.hostname.toLowerCase();
+    // Strip brackets from IPv6 literals (URL.hostname keeps them)
+    const hostname = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '');
 
     // Block non-http/https protocols (file://, ftp://, javascript://, etc.)
     if (!ALLOWED_PROTOCOLS.has(parsed.protocol)) {
@@ -57,8 +58,7 @@ export const isPrivateUrl = (url: string): boolean => {
     // Block IPv6 internal addresses
     if (
       hostname === '::1' ||
-      hostname === '[::1]' ||
-      hostname === '[::]' ||
+      hostname === '::' ||
       /^fc[0-9a-f]{2}:/i.test(hostname) ||   // IPv6 ULA range fc00::/7
       /^fd[0-9a-f]{2}:/i.test(hostname) ||   // IPv6 ULA range fd00::/8
       /^fc00:/i.test(hostname) ||             // IPv6 Unique Local Address

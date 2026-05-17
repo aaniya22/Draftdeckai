@@ -40,20 +40,41 @@ export async function GET(request: NextRequest) {
       return new NextResponse('URL does not point to a valid image', { status: 400 });
     }
 
-    // Check Content-Length before downloading (OWASP A04)
+    // Check Content-Length header before downloading (OWASP A04)
     const contentLength = parseInt(response.headers.get('Content-Length') || '0', 10);
     if (contentLength > MAX_IMAGE_SIZE) {
       return new NextResponse('Image too large', { status: 413 });
     }
 
-    const arrayBuffer = await response.arrayBuffer();
-
-    // Double-check actual size after download
-    if (arrayBuffer.byteLength > MAX_IMAGE_SIZE) {
-      return new NextResponse('Image too large', { status: 413 });
+    // Stream body with size enforcement to prevent memory exhaustion
+    // from chunked responses that omit or lie about Content-Length
+    const reader = response.body?.getReader();
+    if (!reader) {
+      return new NextResponse('Empty response body', { status: 502 });
     }
 
-    const base64 = Buffer.from(arrayBuffer).toString('base64');
+    const chunks: Uint8Array[] = [];
+    let totalSize = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalSize += value.byteLength;
+      if (totalSize > MAX_IMAGE_SIZE) {
+        reader.cancel();
+        return new NextResponse('Image too large', { status: 413 });
+      }
+      chunks.push(value);
+    }
+
+    const combined = new Uint8Array(totalSize);
+    let offset = 0;
+    for (const chunk of chunks) {
+      combined.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+
+    const base64 = Buffer.from(combined).toString('base64');
     const dataUrl = `data:${mimeType};base64,${base64}`;
 
     return NextResponse.json({ success: true, dataUrl }, {
