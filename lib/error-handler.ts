@@ -194,7 +194,7 @@ function dispatchSpikeAlert(rate: number, total: number, errors: number) {
  * ==========================================
  */
 
-export function captureException(error: any, requestContext: {
+export async function captureException(error: any, requestContext: {
   requestId: string;
   path: string;
   method: string;
@@ -277,7 +277,7 @@ export function captureException(error: any, requestContext: {
   }
 
   // 4. Alert Routing
-  dispatchErrorAlert(errorDetails);
+  await dispatchErrorAlert(errorDetails);
 
   return errorDetails;
 }
@@ -359,7 +359,7 @@ export function withErrorHandling(handler: ApiHandler): ApiHandler {
       }
 
       // Capture and track exception details
-      const caughtDetails = captureException(error, requestContext);
+      const caughtDetails = await captureException(error, requestContext);
 
       // Standardized production-grade error response
       const isOperational = error instanceof AppError && error.isOperational;
