@@ -81,10 +81,10 @@ const RL = {
 type RLKey = keyof typeof RL;
 
 const store = new Map<string, { count: number; reset: number }>();
-setInterval(() => {
+function pruneStore() {
   const now = Date.now();
   for (const [k, d] of store) if (now > d.reset) store.delete(k);
-}, 60_000);
+}
 
 function rlKey(p: string): RLKey {
   // Strip version prefix so /api/v1/generate/... and /api/generate/... share the same bucket
@@ -95,6 +95,7 @@ function rlKey(p: string): RLKey {
 }
 
 function checkRL(ip: string, pathname: string) {
+  pruneStore();
   const k = rlKey(pathname);
   const cfg = RL[k];
   const now = Date.now();
