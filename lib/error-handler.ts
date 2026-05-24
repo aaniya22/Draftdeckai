@@ -163,17 +163,17 @@ export async function dispatchErrorAlert(errorDetails: any) {
   // If Slack Webhook is configured
   if (process.env.SLACK_WEBHOOK_URL) {
     try {
-const res = await fetch(process.env.SLACK_WEBHOOK_URL, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    text: `*${alertPayload.title}*\n*Endpoint:* ${alertPayload.endpoint}\n*Request ID:* \`${alertPayload.requestId}\`\n*Environment:* \`${alertPayload.environment}\``,
-  }),
-  signal: AbortSignal.timeout(5000),
-});
-if (!res.ok) {
-  logger.error(null, `Slack alert failed: ${res.status} ${res.statusText}`);
-}
+      const res = await fetch(process.env.SLACK_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: `...`,
+        }),
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!res.ok) {
+        logger.error(null, `Slack alert failed: ${res.status} ${res.statusText}`);
+      }
     } catch (e) {
       logger.error(null, 'Failed to dispatch Slack alert', e);
     }
