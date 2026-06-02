@@ -24,6 +24,14 @@ function getValidationStatus(error: unknown) {
   return null;
 }
 
+function getSafeUtmData(utmData: unknown) {
+  if (!utmData || typeof utmData !== "object" || Array.isArray(utmData)) {
+    return {};
+  }
+
+  return utmData as Record<string, unknown>;
+}
+
 export async function POST(request: Request) {
   try {
     const rawBody = await request.json();
@@ -39,9 +47,11 @@ export async function POST(request: Request) {
     });
     const sanitizedName = sanitizeInput(validated.name);
     const sanitizedEmail = sanitizeInput(validated.email);
-    const sanitizedReferralCode = referralCode
+    const trimmedReferralCode = referralCode
       ? String(referralCode).toUpperCase().trim()
-      : null;
+      : "";
+    const sanitizedReferralCode =
+      trimmedReferralCode === "" ? null : trimmedReferralCode;
 
     // Additional security checks
     if (
@@ -56,15 +66,13 @@ export async function POST(request: Request) {
     const origin = (() => {
       try {
         const url = new URL((request as any).url);
-        return url.origin;
+        return url.origin.replace(/\/+$/, "");
       } catch {
-        return process.env.NEXT_PUBLIC_SITE_URL || "";
+        return (process.env.NEXT_PUBLIC_SITE_URL || "").replace(/\/+$/, "");
       }
     })();
 
-    const finalRedirectUrl = origin
-      ? `${origin}/auth/callback`.replace(/\/$/, "")
-      : undefined;
+    const finalRedirectUrl = origin ? `${origin}/auth/callback` : undefined;
 
     // 2. Inject utmData into the Supabase user metadata
     const { data, error } = await supabase.auth.signUp({
@@ -73,10 +81,10 @@ export async function POST(request: Request) {
       options: {
         emailRedirectTo: finalRedirectUrl,
         data: {
+          ...getSafeUtmData(utmData), // This saves marketing tags permanently to the DB.
           name: sanitizedName,
           email: sanitizedEmail,
           referral_code: sanitizedReferralCode,
-          ...utmData, // <-- This saves the marketing tags permanently to the DB
         },
       },
     });

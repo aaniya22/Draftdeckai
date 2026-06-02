@@ -10,7 +10,23 @@ const supabase = createClient(
 const REFERRAL_BONUS_CREDITS = 5;
 
 function isInvalidJsonError(error: unknown) {
-  return error instanceof SyntaxError;
+  return error instanceof SyntaxError || error instanceof TypeError;
+}
+
+async function rollbackReferral(referrerId: string, newUserId: string) {
+  const { error } = await supabase
+    .from("referrals")
+    .delete()
+    .eq("referrer_id", referrerId)
+    .eq("referred_id", newUserId);
+
+  if (error) {
+    logger.error(
+      { route: "app/api/referral/route.ts" },
+      "Error rolling back referral record:",
+      error,
+    );
+  }
 }
 
 // GET: Get user's referral info
@@ -105,11 +121,13 @@ export async function POST(request: Request) {
       );
     }
 
+    const normalizedReferralCode = String(referralCode).toUpperCase().trim();
+
     // Find the referrer by code
     const { data: referrer, error: referrerError } = await supabase
       .from("user_credits")
       .select("user_id, referral_credits_earned, credits_total")
-      .eq("referral_code", referralCode.toUpperCase())
+      .eq("referral_code", normalizedReferralCode)
       .single();
 
     if (referrerError || !referrer) {
@@ -146,7 +164,7 @@ export async function POST(request: Request) {
     const { error: insertError } = await supabase.from("referrals").insert({
       referrer_id: referrer.user_id,
       referred_id: newUserId,
-      referral_code: referralCode.toUpperCase(),
+      referral_code: normalizedReferralCode,
       credits_awarded: REFERRAL_BONUS_CREDITS,
       status: "completed",
     });
@@ -179,13 +197,31 @@ export async function POST(request: Request) {
         "Error awarding referral credits:",
         updateError,
       );
+      await rollbackReferral(referrer.user_id, newUserId);
+      return NextResponse.json(
+        { error: "Failed to award referral credits" },
+        { status: 500 },
+      );
     }
 
     // Update the new user's record to track who referred them
-    await supabase
+    const { error: referredByError } = await supabase
       .from("user_credits")
       .update({ referred_by: referrer.user_id })
       .eq("user_id", newUserId);
+
+    if (referredByError) {
+      logger.error(
+        { route: "app/api/referral/route.ts" },
+        "Error updating referred_by:",
+        referredByError,
+      );
+      await rollbackReferral(referrer.user_id, newUserId);
+      return NextResponse.json(
+        { error: "Failed to update referral attribution" },
+        { status: 500 },
+      );
+    }
 
     return NextResponse.json(
       {
