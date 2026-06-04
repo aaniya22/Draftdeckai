@@ -7,7 +7,8 @@ const STORAGE_KEYS = {
     OPENAI_KEY: 'openai_api_key',
     MISTRAL_KEY: 'mistral_api_key',
     CLAUDE_KEY: 'claude_api_key',
-    SETTINGS: 'settings'
+    SETTINGS: 'settings',
+    LINKEDIN_AUTO_DETECT_DISABLED: 'draftdeckai_auto_detection_disabled'
 };
 
 // Load settings on page load
@@ -25,7 +26,8 @@ async function loadSettings() {
             STORAGE_KEYS.OPENAI_KEY,
             STORAGE_KEYS.MISTRAL_KEY,
             STORAGE_KEYS.CLAUDE_KEY,
-            STORAGE_KEYS.SETTINGS
+            STORAGE_KEYS.SETTINGS,
+            STORAGE_KEYS.LINKEDIN_AUTO_DETECT_DISABLED
         ]);
 
         // Load AI provider
@@ -48,6 +50,7 @@ async function loadSettings() {
         };
 
         document.getElementById('auto-detect').checked = settings.autoDetect;
+        document.getElementById('linkedin-auto-detect').checked = result[STORAGE_KEYS.LINKEDIN_AUTO_DETECT_DISABLED] !== true;
         document.getElementById('notifications').checked = settings.notifications;
         document.getElementById('hints-first').checked = settings.showHintsFirst;
         document.getElementById('default-language').value = settings.defaultLanguage;
@@ -147,6 +150,7 @@ async function saveSettings() {
             showHintsFirst: document.getElementById('hints-first').checked,
             defaultLanguage: document.getElementById('default-language').value
         };
+        const linkedinAutoDetectDisabled = !document.getElementById('linkedin-auto-detect').checked;
 
         // Save to storage
         await chrome.storage.local.set({
@@ -155,7 +159,8 @@ async function saveSettings() {
             [STORAGE_KEYS.OPENAI_KEY]: openaiKey,
             [STORAGE_KEYS.MISTRAL_KEY]: mistralKey,
             [STORAGE_KEYS.CLAUDE_KEY]: claudeKey,
-            [STORAGE_KEYS.SETTINGS]: settings
+            [STORAGE_KEYS.SETTINGS]: settings,
+            [STORAGE_KEYS.LINKEDIN_AUTO_DETECT_DISABLED]: linkedinAutoDetectDisabled
         });
 
         // Update status badges
@@ -240,6 +245,7 @@ async function resetSettings() {
         document.getElementById('claude-api-key').value = '';
 
         document.getElementById('auto-detect').checked = true;
+        document.getElementById('linkedin-auto-detect').checked = true;
         document.getElementById('notifications').checked = true;
         document.getElementById('hints-first').checked = true;
         document.getElementById('default-language').value = 'javascript';
