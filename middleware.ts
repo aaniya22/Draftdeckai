@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { RATE_LIMIT_CONFIG } from "@/lib/config";
 import { CSP_HEADER, buildCspWithNonce } from "@/lib/csp";
 import { REQUEST_ID_HEADER, createRequestId, logger } from "@/lib/logger";
 import { applySecurityHeaders, buildCorsHeaders } from "@/lib/security-headers";
@@ -32,11 +33,7 @@ function logError(
   );
 }
 
-const RL = {
-  AUTH: { windowMs: 15 * 60 * 1000, max: 10 },
-  GENERATE: { windowMs: 5 * 60 * 1000, max: 20 },
-  API: { windowMs: 60 * 1000, max: 100 },
-} as const;
+const RL = RATE_LIMIT_CONFIG;
 
 type RLKey = keyof typeof RL;
 
