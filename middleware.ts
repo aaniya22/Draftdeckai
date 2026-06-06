@@ -116,7 +116,7 @@ export function middleware(req: NextRequest) {
     });
   }
 
-  if (/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff2?)$/i.test(pathname)) {
+  if (/\.(js|css|png|jpg|jpeg|gif|svg|webp|avif|ico|woff2?)$/i.test(pathname)) {
     const r = NextResponse.next();
     r.headers.set("Cache-Control", "public,max-age=31536000,immutable");
     r.headers.set(REQUEST_ID_HEADER, requestId);
