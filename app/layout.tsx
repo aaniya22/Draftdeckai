@@ -1,5 +1,8 @@
 import "./globals.css";
 import type { ReactNode } from "react";
+import { logEnvStatus } from "@/lib/env-validator";
+
+logEnvStatus();
 
 import Footer from "@/components/ui/Footer";
 import { Inter, Poppins } from "next/font/google";

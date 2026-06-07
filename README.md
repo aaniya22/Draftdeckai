@@ -103,7 +103,7 @@ STRIPE_SECRET_KEY=your_stripe_key
 
 ## 🐳 Docker Quick Start
 
-Run the entire application with one command — no manual Node.js installation required.
+Run the entire application including the database with one command — no manual Node.js or PostgreSQL installation required.
 
 ### Prerequisites
 - [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
@@ -117,18 +117,19 @@ cd Draftdeckai
 
 # Set up environment variables
 cp .env.example .env.local
-# Edit .env.local with your API keys
+# Edit .env.local with your API keys (and optionally SUPABASE_JWT_SECRET)
 
-# Build and start (development mode with hot reload)
+# Build and start both App and Database
 docker compose up
-
-# For production build:
-docker compose -f docker-compose.yml up
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-The development setup mounts your local files for hot reload — changes to the source code automatically refresh the app.
+The setup includes:
+- **App Service**: Next.js with hot reload (Port 3000)
+- **Database Service**: PostgreSQL 16 (Port 5432)
+- **Shared Network**: Inter-service communication
+- **Persistent Storage**: Database data persists in `postgres_data` volume
 
 ---
 
@@ -200,18 +201,17 @@ Free tier: 50 credits/month
 ### Getting Started (⭐ Start Here!)
 - **[docs/SETUP.md](./docs/SETUP.md)** - 📖 Complete setup guide with step-by-step API key generation and troubleshooting
 - **[CONTRIBUTING.md](./CONTRIBUTING.md)** - Contribution guidelines
-- **[docs/UTILITIES.md](./docs/UTILITIES.md)** - Development utilities & best practices guide
 
 ### Architecture & Diagrams
 - [docs/DARK_MODE_PERSISTENCE.md](./docs/DARK_MODE_PERSISTENCE.md) - 🌓 Detailed dark mode persistence and FOUC prevention system guide
-- [ARCHITECTURE_DIAGRAM_FEATURE.md](./ARCHITECTURE_DIAGRAM_FEATURE.md) - Complete guide to architecture diagrams
-- [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md) - Technical system architecture  
-- [ARCHITECTURE_IMPROVEMENTS.md](./ARCHITECTURE_IMPROVEMENTS.md) - Recent improvements summary
+- [docs/architecture/ARCHITECTURE_DIAGRAM_FEATURE.md](./docs/architecture/ARCHITECTURE_DIAGRAM_FEATURE.md) - Complete guide to architecture diagrams
+- [docs/architecture/SYSTEM_ARCHITECTURE.md](./docs/architecture/SYSTEM_ARCHITECTURE.md) - Technical system architecture
+- [docs/architecture/ARCHITECTURE_IMPROVEMENTS.md](./docs/architecture/ARCHITECTURE_IMPROVEMENTS.md) - Recent improvements summary
 
 ### Other Docs
-- [Code_of_Conduct.md](./Code_of_Conduct.md) - Community standards
-- [CHANGELOG.md](./CHANGELOG.md) - Version history
-- [FAQ.md](./FAQ.md) - Frequently asked questions
+- [docs/Code_of_Conduct.md](./docs/Code_of_Conduct.md) - Community standards
+- [docs/CHANGELOG.md](./docs/CHANGELOG.md) - Version history
+- [docs/FAQ.md](./docs/FAQ.md) - Frequently asked questions
 - [docs/THEME_FIX.md](./docs/THEME_FIX.md) - Theme-Adaptive presentation fix guide
 
 ---
@@ -259,7 +259,6 @@ Contributions are welcome! We've made it easy to get started:
 **First-time contributors?** Start here:
 1. 📖 Read [docs/SETUP.md](./docs/SETUP.md) - Complete setup guide with all API keys
 2. 📚 Check [CONTRIBUTING.md](./CONTRIBUTING.md) - Contribution guidelines
-3. 🛠️ Review [docs/UTILITIES.md](./docs/UTILITIES.md) - Development utilities guide
 
 **Ready to contribute?**
 1. Fork the repository
