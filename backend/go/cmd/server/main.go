@@ -45,6 +45,9 @@ func main() {
 	config.PrintStartupSummary()
 
 	port := os.Getenv("PORT")
+if port == "" {
+    port = "8080"
+}
 
 	mux := http.NewServeMux()
 
@@ -58,6 +61,7 @@ func main() {
 	})
 
 	// Apply middleware: Recoverer → RequestLogger → mux
+	RequestLogger(Recoverer(mux))
 	handler := middleware.Recoverer(middleware.RequestLogger(mux))
 
 	slog.Info("server listening", slog.String("port", port))
