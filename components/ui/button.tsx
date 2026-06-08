@@ -18,7 +18,8 @@ const buttonVariants = cva(
           'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
-        gradient: 'bolt-gradient text-white font-semibold py-6 rounded-xl hover:scale-105 transition-all duration-300',
+        // FIXED: Replaced 'bolt-gradient' with raw Tailwind gradient classes
+        gradient: 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold py-6 rounded-xl hover:scale-105 transition-all duration-300 shadow-md',
       },
       size: {
         default: 'h-11 sm:h-10 px-5 sm:px-4 py-2',
