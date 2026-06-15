@@ -1,5 +1,6 @@
 "use client";
 import { logger } from "@/lib/logger";
+import { requestNotificationPermission, showDocumentNotification } from "@/lib/notifications";
 
 import {
   useState,
@@ -1718,6 +1719,10 @@ export default function RealTimeGenerator() {
       const {
         data: { session },
       } = await supabase.auth.getSession();
+      // Request notification permissions for long-running task
+      requestNotificationPermission().catch(console.error);
+
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error("Please sign in to create presentations.");
       }
@@ -1750,12 +1755,25 @@ export default function RealTimeGenerator() {
       setSlides(normalizedSlides);
       setCurrentSlideText("Rendering visuals...");
       setProgress(100);
+
+      // Show push notification
+      showDocumentNotification("🎉 Presentation Ready!", {
+        body: `${normalizedSlides.length} slides created successfully. Click to view!`,
+        data: { url: window.location.pathname }
+      }).catch(console.error);
+
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to generate presentation";
       console.error("Presentation generation failed:", err);
       setError(message);
       alert(`Failed to generate presentation: ${message}`);
+
+      // Show failure notification
+      showDocumentNotification("❌ Generation Failed", {
+        body: "Failed to generate your presentation. Please try again.",
+        data: { url: window.location.pathname }
+      }).catch(console.error);
     } finally {
       setIsStreaming(false);
       setCurrentSlideText("");
@@ -2002,6 +2020,18 @@ export default function RealTimeGenerator() {
             <div
               className="flex items-center gap-3 cursor-pointer group"
               onClick={() => !isStreaming && setView("dashboard")}
+            <div 
+              className="flex items-center gap-3 cursor-pointer group" 
+              onClick={() => !isStreaming && setView('dashboard')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  if (!isStreaming) setView('dashboard');
+                }
+              }}
+              aria-label="Go to dashboard"
             >
               <div className="w-10 h-10 bolt-gradient rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
                 <Sparkles className="w-5 h-5 text-white" />
