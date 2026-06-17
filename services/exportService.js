@@ -21,7 +21,7 @@ export function sortLayersByZIndex(layers) {
 export function exportToPNG(canvas, elements) {
   if (!canvas) throw new Error('Canvas is required for export');
 
-  const sortedElements = sortLayersByZIndex(elements);
+  const sortedElements = sortLayersByZIndex(elements ?? []);
 
   // Re-apply z-order on canvas objects before export
   sortedElements.forEach((element, index) => {
@@ -44,7 +44,7 @@ export function exportToPNG(canvas, elements) {
 export function exportToSVG(canvas, elements) {
   if (!canvas) throw new Error('Canvas is required for export');
 
-  const sortedElements = sortLayersByZIndex(elements);
+  const sortedElements = sortLayersByZIndex(elements ?? []);
 
   // Re-apply z-order on canvas objects before export
   sortedElements.forEach((element, index) => {
@@ -85,6 +85,6 @@ export function downloadSVG(svgString, filename = 'design.svg') {
   link.download = filename;
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+document.body.removeChild(link);
+setTimeout(() => URL.revokeObjectURL(url), 0);
 }
